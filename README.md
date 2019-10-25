@@ -1,2 +1,4 @@
 # CMPE283
-Virtualization 
+Virtualization Technologies
+
+Alan Hsueh, Krishnamurthy Vignesh Thyagarajan
