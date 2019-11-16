@@ -23,7 +23,13 @@
 #include "mmu.h"
 #include "trace.h"
 #include "pmu.h"
+//#include "vmx/vmx.c"
 
+atomic_t exit_count;
+uint32_t exit_array[65];
+
+EXPORT_SYMBOL(exit_count);
+EXPORT_SYMBOL(exit_array);
 static u32 xstate_required_size(u64 xstate_bv, bool compacted)
 {
 	int feature_bit = 0;
@@ -1046,7 +1052,27 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
-	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+
+
+	if(eax==0x4FFFFFFF){
+		//Print all counts
+		eax = atomic_read(&exit_count);
+		printk("Exit Count = " + eax);
+	}
+
+	else if(eax==0x4ffffffd){
+		//Print specific count
+		eax = exit_array[ecx];
+		printk("Exit Count for %d: ", ecx);
+		printk("is %d ", eax);
+		printk("Exit count for %d is %d", ecx, eax);
+	}
+	
+	else{
+		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+
+	}
+	
 	kvm_rax_write(vcpu, eax);
 	kvm_rbx_write(vcpu, ebx);
 	kvm_rcx_write(vcpu, ecx);

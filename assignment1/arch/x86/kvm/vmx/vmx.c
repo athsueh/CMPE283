@@ -64,11 +64,22 @@
 MODULE_AUTHOR("Qumranet");
 MODULE_LICENSE("GPL");
 
+extern atomic_t exit_count;
+extern uint32_t exit_array[65];
+
 static const struct x86_cpu_id vmx_cpu_id[] = {
 	X86_FEATURE_MATCH(X86_FEATURE_VMX),
 	{}
 };
 MODULE_DEVICE_TABLE(x86cpu, vmx_cpu_id);
+
+
+//declaring exit counter variable
+
+
+//declaring exit array
+
+
 
 bool __read_mostly enable_vpid = 1;
 module_param_named(vpid, enable_vpid, bool, 0444);
@@ -5863,6 +5874,22 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu)
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
+	
+	//incrementing count
+	//exit_count++;
+
+	
+	
+	//incrementing atomic counter
+	atomic_inc(&exit_count);
+
+	if(!exit_array[exit_reason]){
+	   //exit_array[exit_reason] = ATOMIC_INIT(0);
+	   exit_array[exit_reason] = 0;
+	}
+	exit_array[exit_reason] = exit_array[exit_reason]+1;
+	//atomic_inc(&exit_array[exit_reason]);
+	
 
 	trace_kvm_exit(exit_reason, vcpu, KVM_ISA_VMX);
 
@@ -8015,3 +8042,4 @@ static int __init vmx_init(void)
 	return 0;
 }
 module_init(vmx_init);
+
