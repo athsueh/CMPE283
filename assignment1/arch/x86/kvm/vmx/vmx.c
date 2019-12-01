@@ -66,6 +66,7 @@ MODULE_LICENSE("GPL");
 
 extern atomic_t exit_count;
 extern uint32_t exit_array[65];
+extern int cycle_count;
 
 static const struct x86_cpu_id vmx_cpu_id[] = {
 	X86_FEATURE_MATCH(X86_FEATURE_VMX),
@@ -5874,11 +5875,12 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu)
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
+
+	//Beginning cycle count
+	uint64_t cycle_begin = rdtsc();
 	
 	//incrementing count
 	//exit_count++;
-
-	
 	
 	//incrementing atomic counter
 	atomic_inc(&exit_count);
@@ -5972,8 +5974,15 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu)
 	}
 
 	if (exit_reason < kvm_vmx_max_exit_handlers
-	    && kvm_vmx_exit_handlers[exit_reason])
+	    && kvm_vmx_exit_handlers[exit_reason]){
+		uint64_t cycle_end = rdtsc();
+		uint64_t difference = cycle_end - cycle_begin;
+		atomic64_add_return(difference, cycle_count);
+		//cycle_count = cycle_end - cycle_begin;
+		
 		return kvm_vmx_exit_handlers[exit_reason](vcpu);
+	}
+		
 	else {
 		vcpu_unimpl(vcpu, "vmx: unexpected exit reason 0x%x\n",
 				exit_reason);

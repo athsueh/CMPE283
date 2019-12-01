@@ -27,7 +27,9 @@
 
 atomic_t exit_count;
 uint32_t exit_array[65];
+int cycle_count;
 
+EXPORT_SYMBOL(cycle_count);
 EXPORT_SYMBOL(exit_count);
 EXPORT_SYMBOL(exit_array);
 static u32 xstate_required_size(u64 xstate_bv, bool compacted)
@@ -1066,6 +1068,14 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		printk("Exit Count for %d: ", ecx);
 		printk("is %d ", eax);
 		printk("Exit count for %d is %d", ecx, eax);
+	}
+
+	else if(eax==0x4ffffffe){
+		//Inserting high 32 bits into ebx and low 32 bits into ecx
+		ebx = cycle_count & 0xfffffff;
+		ecx = cycle_count >> 32;		
+
+		printk("Printing test");
 	}
 	
 	else{
